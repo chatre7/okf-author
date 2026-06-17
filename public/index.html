@@ -70,8 +70,8 @@
 
     <script>
         let allNodesData = [];
-        let simulation;
-        let svg, g, zoom;
+        let lastGraphLinks = []; // เก็บ links ล่าสุดไว้ใช้ highlight
+        let simulation, svg, g, zoom;
 
         function loadInitialData() {
             fetch('/api/nodes')
@@ -79,8 +79,34 @@
                 .then(nodes => {
                     allNodesData = nodes;
                     renderSidebar(nodes);
-                })
-                .catch(err => console.error("Error loading nodes:", err));
+                });
+        }
+
+        function renderSidebar(nodes) {
+            const list = d3.select('#node-list');
+            list.html('');
+            nodes.forEach(node => {
+                const item = list.append('div').attr('class', 'node-item')
+                    .on('click', (event) => {
+                        event.stopPropagation();
+                        showDetails(node.filename);
+                        clearHighlight();
+                        if (lastGraphLinks.length > 0) highlightNodeConnections(node.filename, lastGraphLinks);
+                    });
+                item.append('h3').text(node.title);
+                item.append('p').text(node.description);
+                const meta = item.append('div').style('margin-top', '5px');
+                meta.append('small').text(`Type: ${node.type} | Links: ${(node.links || []).length}`)
+                    .style('color', '#999').style('font-size', '0.7rem');
+                if (node.brokenLinks && node.brokenLinks.length > 0) {
+                    meta.append('small').text(` | ⚠️ ${node.brokenLinks.length} Broken`)
+                        .style('color', '#dc3545').style('font-size', '0.7rem').style('font-weight', 'bold');
+                }
+                const tagsContainer = item.append('div');
+                (node.tags || []).forEach(tag => {
+                    tagsContainer.append('span').attr('class', 'tag').text(tag);
+                });
+            });
         }
 
         const searchInput = document.getElementById('search-input');
@@ -98,28 +124,6 @@
                     });
             }, 300);
         });
-
-        function renderSidebar(nodes) {
-            const list = d3.select('#node-list');
-            list.html('');
-            nodes.forEach(node => {
-                const item = list.append('div').attr('class', 'node-item')
-                    .on('click', () => showDetails(node.filename));
-                item.append('h3').text(node.title);
-                item.append('p').text(node.description);
-                const meta = item.append('div').style('margin-top', '5px');
-                meta.append('small').text(`Type: ${node.type} | Links: ${(node.links || []).length}`)
-                    .style('color', '#999').style('font-size', '0.7rem');
-                if (node.brokenLinks && node.brokenLinks.length > 0) {
-                    meta.append('small').text(` | ⚠️ ${node.brokenLinks.length} Broken`)
-                        .style('color', '#dc3545').style('font-size', '0.7rem').style('font-weight', 'bold');
-                }
-                const tagsContainer = item.append('div');
-                (node.tags || []).forEach(tag => {
-                    tagsContainer.append('span').attr('class', 'tag').text(tag);
-                });
-            });
-        }
 
         function filterByTag(tagName) {
             d3.select('#reset-btn').style('display', 'block');
@@ -190,6 +194,7 @@
         fetch('/api/graph')
             .then(res => res.json())
             .then(data => {
+                lastGraphLinks = data.links;
                 simulation = d3.forceSimulation(data.nodes)
                     .force("link", d3.forceLink(data.links).id(d => d.id).distance(100))
                     .force("charge", d3.forceManyBody().strength(-150))

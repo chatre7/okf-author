@@ -6,13 +6,16 @@
 
 - **AI-Native (MCP Server):** เชื่อมต่อกับ AI Agents (Claude, Gemini) เพื่อให้ AI สามารถค้นหาและสรุปข้อมูลจากคลังความรู้ของทีมได้แม่นยำ
 - **Hybrid Server:** ทำงานเป็นทั้ง MCP Server (Stdio) และ REST API Server (HTTP Port 3000) ในตัวเดียวกัน
-- **Interactive Knowledge Graph:** Dashboard แสดงความสัมพันธ์ของความรู้แบบกราฟ (Force-Directed Graph) ซูมเข้า-ออกได้ จัดระเบียบได้
-- **Link Validation:** ระบบตรวจสอบ Link อัตโนมัติ ป้องกันปัญหา Broken Link ในคลังข้อมูล
+- **Interactive Knowledge Graph:** Dashboard แสดงความสัมพันธ์ของความรู้แบบกราฟ (Force-Directed Graph) 
+    - รองรับการซูม (Zoom In/Out) และเลื่อน (Pan)
+    - ระบบ **Highlight Synchronization**: เมื่อคลิกที่ Sidebar หรือในกราฟ ระบบจะ Highlight เส้นความสัมพันธ์ที่เกี่ยวข้องให้ทันที
+- **Link Validation:** ระบบตรวจสอบ Link อัตโนมัติ ป้องกันปัญหา Broken Link โดยแสดงเป็นจุดสีแดงประในกราฟ
 - **OKF Compliance:** โครงสร้างข้อมูลเป็นไปตามมาตรฐาน Open Knowledge Format (YAML Frontmatter + Markdown)
 
 ## 📁 โครงสร้างโปรเจกต์
 
-- `okf_data/`: คลังข้อมูลเอกสาร (.md) แบ่งตามหมวดหมู่ (projects, guidelines, infra)
+- `okf_data/`: คลังข้อมูลเอกสาร (.md) แบ่งตามหมวดหมู่
+- `okf_data/infra/server-architecture.md`: เอกสารทางเทคนิคที่สรุปสถาปัตยกรรมของระบบนี้
 - `public/`: ไฟล์หน้าเว็บ Dashboard
 - `index.ts`: หัวใจหลักของระบบ (Hybrid Server)
 - `okf-author.skill`: Agent Skill สำหรับช่วยสร้างเอกสารให้ตรงตามมาตรฐาน
